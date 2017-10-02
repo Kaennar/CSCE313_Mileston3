@@ -22,14 +22,14 @@ typedef struct block_list_type{
   int eff_block_size;
   int max_block_size;
   int num_levels;
-  FL_HEADER_TYPE* lvls[];
+  FL_HEADER_TYPE** lvls;
 }block_list;
 
 
 // LOCAL VARIABLES
 bool initialized = false;
 
-block_list bl= NULL;
+block_list bl= {0,0,0,NULL};
 
 
 /**
@@ -53,16 +53,19 @@ unsigned int init_allocator(unsigned int basic_block_size, unsigned int length){
     }
     level_size = level_size/2;
     // Now we need to setup the block_list object
-    blocklvl = (FL_HEADER_TYPE**)malloc(sizeof(FL_HEADER_TYPE*)*number_levels);
+    FL_HEADER_TYPE** blocklvl = (FL_HEADER_TYPE**)malloc(sizeof(FL_HEADER_TYPE*)*number_levels);
     for (int i=0; i < number_levels; i++){
       blocklvl[i] = NULL;
     }
-    bl = {eff_block_size,level_size,number_levels,blocklvl};
+    bl.eff_block_size = eff_block_size;
+    bl.max_block_size = level_size;
+    bl.num_levels = number_levels;
+    bl.lvls = blocklvl;
     // Create the largest available chunk and set that as the first header
-    FL_HEADER_TYPE* first_block = malloc(sizeof(char)*level_size); 
+    FL_HEADER_TYPE* first_block = (FL_HEADER_TYPE*)malloc(sizeof(char)*level_size); 
     first_block->next = NULL;
     first_block->prev = NULL;
-    first_block->level = number_levels;
+    first_block->level = number_levels-1;
     bl.lvls[number_levels-1] = first_block;
     
     return 1;
@@ -88,7 +91,7 @@ void print_list(){
       printf("ADDR:: %lu\n",node);
       printf("\tnext:: %lu\n",node->next);
       printf("\tprev:: %lu\n",node->prev);
-      printf("\tlen :: %i\n",node->length);
+      printf("\tlev :: %i\n",node->level);
       printf("-------------------\n");
       node = node->next;
     }
@@ -113,7 +116,7 @@ int buildup_from_level(int level){
       FL_HEADER_TYPE* buddy = node->next;
       while (buddy != NULL){
         // While there might be buddys out there
-        if ((long)((UL)buddy - (UL)node) <= blkSize){
+        if ((int)((UL)buddy - (UL)node) <= blkSze){
           // Found some buddys, time to add them together
           bl.lvls[level] = remove_free_list(bl.lvls[level],node);
           bl.lvls[level] = remove_free_list(bl.lvls[level],buddy);
@@ -151,7 +154,7 @@ int breakdown_to_level(int level){
     FL_HEADER_TYPE* block1 = node;
     block1->level = level-1;
     FL_HEADER_TYPE* block2 = (FL_HEADER_TYPE*)((char*)node + levelSize/2 );
-    block2->level = level-1:
+    block2->level = level-1;
     bl.lvls[level-1] = add_free_list(bl.lvls[level-1],block1); 
     bl.lvls[level-1] = add_free_list(bl.lvls[level-1],block2); 
     // We've broken down the block we need so we return and move on
@@ -175,12 +178,20 @@ void* get_ptr_for_level(int level){
       void* ptr = (void*)((char*)node + sizeof(FL_HEADER_TYPE));
       return ptr;
     }
+  }else{
+      FL_HEADER_TYPE* node = bl.lvls[level];
+      bl.lvls[level] = remove_free_list(bl.lvls[level],node);
+      // Get the pointer
+      void* ptr = (void*)((char*)node + sizeof(FL_HEADER_TYPE));
+      return ptr;
+    
   }
   return NULL; 
 }
 
 
 Addr my_malloc(int length) {
+  //print_list();
   if (initialized){
     for (int i=0; i < bl.num_levels; i++){
       int lvlSize = bl.eff_block_size*(int)pow(2,i);
@@ -197,9 +208,10 @@ int my_free(Addr a) {
   if (initialized){
     // Return to the FL_HEADER
     FL_HEADER_TYPE* node = (FL_HEADER_TYPE*)((char*)a - sizeof(FL_HEADER_TYPE));
-    printf("Adding node to level %i", node->level);
+    printf("Adding node back to level %i\n", node->level);  
     bl.lvls[node->level] = add_free_list(bl.lvls[node->level],node);
     buildup_from_level(0);
+    print_list();
     return 1;
   }else{
     return 0;

@@ -78,6 +78,7 @@ void print_time_diff(struct timeval * tp1, struct timeval * tp2);
 int main(int argc, char ** argv) {
 
   unsigned int total_memory_size = 0;
+  unsigned int basic_block_size = 0;
   char c_opt;
   printf("Hello,Dave.\n");
   // Format = -b <blocksize> -s memsize
@@ -89,6 +90,10 @@ int main(int argc, char ** argv) {
         printf("Memory Size :: %s\n",optarg);
         total_memory_size =(unsigned int) atoi(optarg); 
         break;
+      case 'b':
+        printf("Basic Block Size :: %s\n",optarg);
+        basic_block_size =(unsigned int) atoi(optarg); 
+        break; 
       case '?':
         printf("Unrecognized argument: %c \n",c_opt);
         break;
@@ -101,9 +106,12 @@ int main(int argc, char ** argv) {
     // set default total_memory_size
     total_memory_size = 4000; // 4k byte meory allocation
   }
+  if (basic_block_size <= 0){
+    basic_block_size = 14;
+  }
   printf("Memory Size:: %u\n",total_memory_size);
   // Initialize the allocator by calling: init_allocator(basic block size, memory length)
-  init_allocator(total_memory_size);
+  init_allocator(basic_block_size,total_memory_size);
 
   // Initialize the allocator by calling: init_allocator(basic block size, memory length)
 
