@@ -27,7 +27,7 @@ typedef void * Addr;
  *
  * @retval 1 if successful or -1 on failure
  */
-unsigned int init_allocator( unsigned int length); 
+unsigned int init_allocator(unsigned int basic_block_size, unsigned int length); 
 
 /**
  * @brief releases all of the memory blocks associated with the allocator

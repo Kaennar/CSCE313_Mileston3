@@ -7,12 +7,6 @@
 #include <stdio.h>
 
 
-typedef struct my_allocator{
-  unsigned int total_memory;
-  void* start_address;
-  FL_HEADER_TYPE* free_list;
-}my_allocator_type;
-
 void print_fl_list(FL_HEADER_TYPE* list){
   printf("-------------------\n");
   printf("***FREE LIST HEADER***\n");
@@ -22,7 +16,7 @@ void print_fl_list(FL_HEADER_TYPE* list){
     printf("ADDR:: %lu\n",node);
     printf("\tnext:: %lu\n",node->next);
     printf("\tprev:: %lu\n",node->prev);
-    printf("\tlen :: %i\n",node->length);
+    printf("\tlev :: %i\n",node->level);
     printf("-------------------\n");
     node = node->next;
   }

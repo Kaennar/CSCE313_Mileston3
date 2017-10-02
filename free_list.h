@@ -6,7 +6,7 @@
 typedef struct my_allocator my_allocator_type;
 
 typedef struct FL_HEADER{
-  int length;
+  int level;
   FL_HEADER* prev;
   FL_HEADER* next;
 } FL_HEADER_TYPE;
