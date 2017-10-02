@@ -194,8 +194,8 @@ Addr my_malloc(int length) {
   //print_list();
   if (initialized){
     for (int i=0; i < bl.num_levels; i++){
-      int lvlSize = bl.eff_block_size*(int)pow(2,i);
-      if (lvlSize >= length){
+      int lvlSize = bl.eff_block_size*(int)pow(2,i)- sizeof(FL_HEADER_TYPE);
+      if (lvlSize > length){
         void* ptr = get_ptr_for_level(i);
         return ptr;
       }
