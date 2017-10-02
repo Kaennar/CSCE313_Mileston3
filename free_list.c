@@ -29,47 +29,41 @@ void print_fl_list(FL_HEADER_TYPE* list){
 
 }
 
-int add_free_list(my_allocator_type* alloc, FL_HEADER_TYPE* new_head ){
+FL_HEADER_TYPE* add_free_list(FL_HEADER_TYPE* alloc, FL_HEADER_TYPE* new_head ){
   if(new_head != NULL) {
-    if (alloc->free_list == NULL){
-      alloc->free_list = new_head;
+    if (alloc == NULL){
+      alloc = new_head;
       new_head->prev = NULL;
       new_head->next = NULL;
-      return 1;
+      return alloc;
     }
-    FL_HEADER_TYPE* ol_head = alloc->free_list;
-    alloc->free_list = new_head;
-    alloc->free_list->prev = NULL;
-    alloc->free_list->next = ol_head;
-    ol_head->prev = alloc->free_list;
-    return 1;
+    FL_HEADER_TYPE* ol_head = alloc;
+    alloc= new_head;
+    alloc->prev = NULL;
+    alloc->next = ol_head;
+    ol_head->prev = alloc;
+    return alloc;
   }else{
- /*   printf("ADD TO FREE LIST FAILED\n");
-    printf("Failed Node\n");
-    printf("\tnode->next :: %u\n",new_head->next);
-    printf("\tnode->prev :: %u \n",new_head->prev);
-    printf("\tlength     :: %i \n",new_head->length);
-*/
-    return 0;
+    return alloc;
   }
 }
 
-int remove_free_list(my_allocator_type* alloc , FL_HEADER_TYPE* fl_head) {
+FL_HEADER_TYPE* remove_free_list(FL_HEADER_TYPE* alloc , FL_HEADER_TYPE* fl_head) {
   // Remove an item from the free list on _alloc
-  FL_HEADER_TYPE* head = alloc->free_list;
+  FL_HEADER_TYPE* head = alloc;
   while (head != NULL ){
     if (head == fl_head ){
       // get the previous and the next
       if (head->prev == NULL && head->next == NULL ){
         // it's the allocator head so we just set ourselves to null
-        alloc->free_list = NULL;
+        alloc= NULL;
       }else if (head->prev != NULL && head->next == NULL){
         //  End of the list
         head->prev->next = NULL;
       }else if (head->prev == NULL &&  head->next != NULL){
         // replacing the allocator head
-        alloc->free_list = head->next;
-        alloc->free_list->prev = NULL;
+        alloc = head->next;
+        alloc->prev = NULL;
       }else {
         // both are not NULL
         head->next->prev = head->prev;
@@ -80,13 +74,11 @@ int remove_free_list(my_allocator_type* alloc , FL_HEADER_TYPE* fl_head) {
       head->next    = NULL;
       //printf ("Looking to remove:: %u\n",head);
       //print_fl_list(alloc->free_list); 
-      return 1;
+      return alloc;
     }else{
       head = head->next;
     }
-  }
-    
-    
-  return 0;
+  } 
+  return alloc;
 }
 

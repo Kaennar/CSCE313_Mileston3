@@ -12,9 +12,9 @@ typedef struct FL_HEADER{
 } FL_HEADER_TYPE;
 
 
-int add_free_list(my_allocator_type* list, FL_HEADER_TYPE* new_head);
+FL_HEADER_TYPE* add_free_list(FL_HEADER_TYPE* alloc, FL_HEADER_TYPE* new_head);
 
 
-int remove_free_list(my_allocator_type* list, FL_HEADER_TYPE* fl_head);
+FL_HEADER_TYPE* remove_free_list(FL_HEADER_TYPE* alloc, FL_HEADER_TYPE* fl_head);
 
 
